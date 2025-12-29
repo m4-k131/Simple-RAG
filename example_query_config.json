@@ -1,0 +1,11 @@
+{
+  "index_path": "faiss_index_unified",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_device": "cuda",
+  "model_path": "/home/makl/.cache/llm_models/qwen2-32b-instruct-q5_K_M.gguf",
+  "llm_n_gpu_layers": -1,
+  "llm_n_ctx": 8192,
+  "llm_n_batch": 512,
+  "retriever_k": 7,
+  "system_prompt": "You are a technical assistant for [Company]. Use the provided context..."
+}

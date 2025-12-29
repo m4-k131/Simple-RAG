@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+# F=Pyflakes, E=pycodestyle, I=Isort, UP=Pyupgrade, B=Bugbear
+# SIM=Simplify (dense code), G=Logging (validates logger() usage)
+select = ["F", "E", "I", "UP", "B", "SIM", "G"]
+ignore = ["E501"] # Explicitly ignore line length
+
+[tool.ruff.lint.isort]
+force-single-line = false # Dense imports
+lines-after-imports = 1   # Dense: only 1 line after imports instead of 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

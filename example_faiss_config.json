@@ -1,0 +1,19 @@
+{
+    "sources": [
+        {
+            "name": "Confluence",
+            "path": "./data/confluence_export",
+            "type": "text",
+            "glob": "**/*.md",
+            "priority": "High"
+        },
+        {
+            "name": "Firmware-Python",
+            "path": "./data/firmware_repo",
+            "type": "code",
+            "glob": "**/*.py",
+            "priority": "Medium",
+            "language": "python"
+        }
+    ]
+}
