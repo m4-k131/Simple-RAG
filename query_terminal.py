@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from enum import StrEnum, auto
@@ -12,8 +13,6 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 
-CONFIG = None
-
 
 class ConfigKeys(StrEnum):
     # auto() creates the value "index_path" from the name
@@ -23,12 +22,16 @@ class ConfigKeys(StrEnum):
     MODEL_PATH = auto()
     RETRIEVER_K = auto()
     SYSTEM_PROMPT = auto()
+    LLM_N_GPU_LAYERS = auto()
+    LLM_N_CTX = auto()
+    LLM_N_BATCH = auto()
 
 
 def validate_config(loaded_json: dict) -> bool:
     for key in loaded_json:
         if key not in ConfigKeys._value2member_map_:
             print(f"Invalid key detected: {key}")
+            return False
     required_keys = {ConfigKeys.INDEX_PATH, ConfigKeys.MODEL_PATH}
     current_keys = set(loaded_json.keys())
     missing = required_keys - current_keys
@@ -39,12 +42,12 @@ def validate_config(loaded_json: dict) -> bool:
 
 
 def load_rag_chain(cfg) -> RunnableParallel:
-    index_path = cfg.get(ConfigKeys.index_path)
-    embedding_model = cfg.get(ConfigKeys.embedding_model)
-    embedding_device = cfg.get(ConfigKeys.embedding_device)
-    model_path = cfg.get(ConfigKeys.model_path)
-    retriever_k = cfg.get(ConfigKeys.retriever_k)
-    system_prompt = cfg.get(ConfigKeys.system_prompt)
+    index_path = cfg.get(ConfigKeys.INDEX_PATH)
+    embedding_model = cfg.get(ConfigKeys.EMBEDDING_MODEL)
+    embedding_device = cfg.get(ConfigKeys.EMBEDDING_DEVICE)
+    model_path = cfg.get(ConfigKeys.MODEL_PATH)
+    retriever_k = cfg.get(ConfigKeys.RETRIEVER_K)
+    system_prompt = cfg.get(ConfigKeys.SYSTEM_PROMPT)
 
     print("\n--- Initializing RAG Pipeline with Citations ---")
     print(f"Loading Index from {index_path}...")
@@ -64,9 +67,9 @@ def load_rag_chain(cfg) -> RunnableParallel:
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
     llm = LlamaCpp(
         model_path=model_path,
-        n_gpu_layers=cfg.get("llm_n_gpu_layers", -1),
-        n_ctx=cfg.get("llm_n_ctx", 8192),
-        n_batch=cfg.get("llm_n_batch", 512),
+        n_gpu_layers=cfg.get(ConfigKeys.LLM_N_GPU_LAYERS, -1),
+        n_ctx=cfg.get(ConfigKeys.LLM_N_CTX, 8192),
+        n_batch=cfg.get(ConfigKeys.LLM_N_BATCH, 512),
         verbose=False,
         callback_manager=callback_manager,
         temperature=0.1,
@@ -84,10 +87,9 @@ def load_rag_chain(cfg) -> RunnableParallel:
     return rag_chain
 
 
-def load_config(path: str):
-    global CONFIG
+def load_config(path: str) -> dict:
     with open(path) as f:
-        CONFIG = json.load(f)
+        return json.load(f)
 
 
 def format_docs_with_source(docs: list[Document]) -> str:
@@ -142,8 +144,19 @@ def print_sources(docs: list[Document]):
     print("=" * 60 + "\n")
 
 
-def main():
-    chain = load_rag_chain()
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Query RAG index from terminal.")
+    parser.add_argument(
+        "--config",
+        "-c",
+        required=True,
+        help="Path to query config JSON (e.g. query_config.json)",
+    )
+    args = parser.parse_args()
+    cfg = load_config(args.config)
+    if not validate_config(cfg):
+        raise SystemExit(1)
+    chain = load_rag_chain(cfg)
     print("\nType your query (or 'exit')...")
     while True:
         try:

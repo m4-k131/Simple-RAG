@@ -1,3 +1,5 @@
 .ruff_cache
 faiss_indices
 models
+outputs
+configs

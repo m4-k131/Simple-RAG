@@ -1,0 +1,24 @@
+# Fixed versions for legacy imports (langchain.callbacks, etc.)
+langchain==0.1.20
+langchain-community==0.0.38
+langchain-core==0.1.52
+
+# Vector Database and Embeddings
+faiss-cpu
+sentence-transformers
+
+# LLM Integration (Llama.cpp)
+# Note: Keep this version-agnostic so it can use your GPU build
+llama-cpp-python
+
+# Document Parsing (Linux versions)
+unstructured[md,email]
+pyyaml
+python-magic
+
+# Advanced Code Parsing (for LanguageParser)
+tree-sitter==0.21.3
+tree-sitter-languages
+
+# Compatibility fix for Python 3.11 + Legacy LangChain
+pydantic<2.0.0
