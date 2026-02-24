@@ -5,7 +5,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 import yaml
 from langchain_community.document_loaders import (
     DirectoryLoader,
@@ -30,7 +30,11 @@ class DataSource:
     type: Literal["text", "code", "email"]
     glob: str = "**/*"
     priority: str = "Low"
-    language: str = None
+    language: Optional[str] = None
+    sub_project: Optional[str] = None
+    sub_context: Optional[str] = None
+    description: Optional[str] = None
+    keywords: Optional[list[str]] = None
 
 def load_config(config_files: list[str]) -> list[DataSource]:
     sources = []
@@ -129,7 +133,16 @@ def build_index(sources: list[DataSource], output_path: str):
         else:
             continue
         for doc in chunks:
-            doc.metadata.update({"source_name": source.name, "priority": source.priority})
+            meta = {"source_name": source.name, "priority": source.priority}
+            if source.sub_project is not None:
+                meta["sub_project"] = source.sub_project
+            if source.sub_context is not None:
+                meta["sub_context"] = source.sub_context
+            if source.description is not None:
+                meta["description"] = source.description
+            if source.keywords is not None:
+                meta["keywords"] = source.keywords
+            doc.metadata.update(meta)
             if "source" in doc.metadata:
                 doc.metadata["filename"] = os.path.basename(doc.metadata["source"])
         all_chunks.extend(chunks)
